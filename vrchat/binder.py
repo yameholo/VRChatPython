@@ -37,9 +37,14 @@ def bind_api(api, path, method="GET", allowed_param=None, model=None, require_au
         if model is None:
             return result
 
+        # ToDo: remove
         print(result.text)
 
         _data = json.loads(result.text)
+
+        # ToDo: remove
+        print(json.dumps(_data, indent=2))
+
         if isinstance(_data, list):
             return [model.parse(v) for v in _data]
 
