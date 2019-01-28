@@ -8,6 +8,16 @@ class Model(object):
         raise NotImplementedError
 
 
+class Config(Model):
+
+    @classmethod
+    def parse(cls, _json):
+        config = cls()
+        for k, v in _json.items():
+            setattr(config, k, v)
+        return config
+
+
 class World(Model):
 
     @classmethod

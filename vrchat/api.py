@@ -1,6 +1,6 @@
 from requests.auth import HTTPBasicAuth
 from vrchat.binder import bind_api
-from vrchat.models import World, Instance, User, Player, FriendStatus
+from vrchat.models import World, Instance, User, Player, FriendStatus, Config
 
 
 class API:
@@ -9,9 +9,113 @@ class API:
         self.apiKey = api_key
         self.host = host
         self.api_root = api_root
+        self.config = None
 
-    def set_api_key(self, api_key):
-        self.apiKey = api_key
+    def set_api_key(self):
+        if self.config is None:
+            self.config = api.remote_config()
+        self.apiKey = self.config.apiKey
+
+    @property
+    def remote_config(self):
+        return bind_api(
+            api=self,
+            path="/config",
+            method="GET",
+            model=Config,
+            allowed_param=[],
+            require_auth=False
+        )
+
+    @property
+    def me(self):
+        return bind_api(
+            api=self,
+            path="/auth/user",
+            model=Player,
+            method="GET",
+            allowed_param=[],
+            require_auth=True
+        )
+
+    @property
+    def list_friends(self):
+        return bind_api(
+            api=self,
+            path="/auth/user/friends",
+            model=User,
+            method="GET",
+            allowed_param=["offset", "n", "offline"],
+            require_auth=True
+        )
+
+    @property
+    def friend_status(self):
+        return bind_api(
+            api=self,
+            path="/user/{id}/friendStatus",
+            model=FriendStatus,
+            method="GET",
+            allowed_param=["id"],
+            require_auth=True
+        )
+
+    # ToDo: Notification
+    # @property
+    # def friend_request(self):
+    #     return bind_api(
+    #         api=self,
+    #         path="/user/{id}/friendRequest",
+    #         model=Notification,
+    #         method="POST",
+    #         allowed_param=["id"],
+    #         require_auth=True
+    #     )
+
+    # ToDo
+    # @property
+    # def unfriend(self):
+    #     return bind_api(
+    #         api=self,
+    #         path="/auth/user/friends/{id}",
+    #         model=Success_or_Error,
+    #         method="DELETE",
+    #         allowed_param=["id"],
+    #         require_auth=True
+    #     )
+
+    @property
+    def get_user_by_id(self):
+        return bind_api(
+            api=self,
+            path="/users/{id}",
+            model=User,
+            method="GET",
+            allowed_param=["id"],
+            require_auth=True
+        )
+
+    @property
+    def get_user_by_name(self):
+        return bind_api(
+            api=self,
+            path="/users/{username}/name",
+            model=User,
+            method="GET",
+            allowed_param=["username"],
+            require_auth=True
+        )
+
+    @property
+    def list_any_users(self):
+        return bind_api(
+            api=self,
+            path="/users",
+            model=User,
+            method="GET",
+            allowed_param=["search", "developerType", "n", "offset"],
+            require_auth=True
+        )
 
     @property
     def get_world(self):
@@ -21,17 +125,6 @@ class API:
             method="GET",
             model=World,
             allowed_param=["id"],
-            require_auth=True
-        )
-
-    @property
-    def get_instance(self):
-        return bind_api(
-            api=self,
-            path="/worlds/{id}/{instanceId}",
-            method="GET",
-            model=Instance,
-            allowed_param=["id", "instanceId"],
             require_auth=True
         )
 
@@ -87,89 +180,36 @@ class API:
             require_auth=True
         )
 
-    @property
-    def me(self):
-        return bind_api(
-            api=self,
-            path="/auth/user",
-            model=Player,
-            method="GET",
-            allowed_param=[],
-            require_auth=True
-        )
-
-    @property
-    def get_user_by_id(self):
-        return bind_api(
-            api=self,
-            path="/users/{id}",
-            model=User,
-            method="GET",
-            allowed_param=["id"],
-            require_auth=True
-        )
-
-    @property
-    def get_user_by_name(self):
-        return bind_api(
-            api=self,
-            path="/users/{username}/name",
-            model=User,
-            method="GET",
-            allowed_param=["username"],
-            require_auth=True
-        )
-
-    @property
-    def list_any_users(self):
-        return bind_api(
-            api=self,
-            path="/users",
-            model=User,
-            method="GET",
-            allowed_param=["search", "developerType", "n", "offset"],
-            require_auth=True
-        )
-
-    @property
-    def list_friends(self):
-        return bind_api(
-            api=self,
-            path="/auth/user/friends",
-            model=User,
-            method="GET",
-            allowed_param=["offset", "n", "offline"],
-            require_auth=True
-        )
-
-    @property
-    def friend_status(self):
-        return bind_api(
-            api=self,
-            path="/user/{id}/friendStatus",
-            model=FriendStatus,
-            method="GET",
-            allowed_param=["id"],
-            require_auth=True
-        )
-
-    # ToDo: add Notification model
+    # ToDo: World Meta
     # @property
-    # def send_friend_request(self):
+    # def get_world_meta(self):
     #     return bind_api(
     #         api=self,
-    #         path="/user/{id}/friendRequest",
-    #         model=Notification,
-    #         method="POST",
+    #         path="/worlds/{id}/metadata",
+    #         method="GET",
+    #         model=WorldMeta,
+    #         allowed_param=["id"],
     #         require_auth=True
     #     )
+
+    @property
+    def get_instance(self):
+        return bind_api(
+            api=self,
+            path="/worlds/{id}/{instanceId}",
+            method="GET",
+            model=Instance,
+            allowed_param=["id", "instanceId"],
+            require_auth=True
+        )
 
 
 if __name__ == '__main__':
     import sys
     username, password, api_key = sys.argv[1:]
     auth = HTTPBasicAuth(username=username, password=password)
-    api = API(auth=auth, api_key=api_key)
+    api = API(auth=auth)
+    api.set_api_key()
     api.me()
     api.list_friends(offline=True)
     api.friend_status(id="usr_43765314-b18b-407e-ba6b-56113c5d06f1")
