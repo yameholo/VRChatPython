@@ -1,6 +1,6 @@
 from requests.auth import HTTPBasicAuth
 from vrchat.binder import bind_api
-from vrchat.models import World, Instance, User, Player, FriendStatus, Config
+from vrchat.models import World, Instance, User, Player, FriendStatus, Config, Favorite
 
 
 class API:
@@ -117,6 +117,51 @@ class API:
             require_auth=True
         )
 
+    # not worked
+    # @property
+    # def add_favorite(self):
+    #     return bind_api(
+    #         api=self,
+    #         path="/favorites",
+    #         model=Favorite,
+    #         method="POST",
+    #         allowed_param=["type", "favoriteId"],
+    #         require_auth=True
+    #     )
+
+    @property
+    def get_favorite(self):
+        return bind_api(
+            api=self,
+            path="/favorites/{id}",
+            model=Favorite,
+            method="GET",
+            allowed_param=["id"],
+            require_auth=True
+        )
+
+    @property
+    def list_favorite(self):
+        return bind_api(
+            api=self,
+            path="/favorites",
+            model=Favorite,
+            method="GET",
+            allowed_param=["type"],
+            require_auth=True
+        )
+
+    @property
+    def delete_favorite(self):
+        return bind_api(
+            api=self,
+            path="/favorites/{id}",
+            model=Favorite,
+            method="DELETE",
+            allowed_param=["id"],
+            require_auth=True
+        )
+
     @property
     def get_world(self):
         return bind_api(
@@ -210,9 +255,9 @@ if __name__ == '__main__':
     auth = HTTPBasicAuth(username=username, password=password)
     api = API(auth=auth)
     api.set_api_key()
-    api.me()
-    api.list_friends(offline=True)
-    api.friend_status(id="usr_43765314-b18b-407e-ba6b-56113c5d06f1")
+    # api.me()
+    # api.list_friends(offline=True)
+    # api.friend_status(id="usr_43765314-b18b-407e-ba6b-56113c5d06f1")
     # api.get_user_by_id(id="usr_0d939cc4-e92d-43e8-a060-799d185715b9")
     # world = api.get_world(
     #     id="wrld_b2d24c29-1ded-4990-a90d-dd6dcc440300"

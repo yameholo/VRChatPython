@@ -65,6 +65,22 @@ class Player(User):
     pass
 
 
+class Friend(User):
+
+    # ToDo
+    # def unfriend(self):
+    #     api.unfriend(id=self.id)
+    pass
+
+
+class AnyUser(User):
+
+    # ToDo
+    # def send_friend_request(self):
+    #     api.friend_request(id=self.id)
+    pass
+
+
 class FriendStatus(Model):
 
     @classmethod
@@ -73,3 +89,32 @@ class FriendStatus(Model):
         for k, v in _json.items():
             setattr(status, k, v)
         return status
+
+
+class Notification(Model):
+
+    @classmethod
+    def parse(cls, _json):
+        notification = cls()
+        for k, v in _json.items():
+            setattr(notification, k, v)
+        return notification
+
+
+class Favorite(Model):
+
+    @classmethod
+    def parse(cls, _json):
+        favorite = cls()
+        for k, v in _json.items():
+            if k == "type":
+                if v == "world":
+                    setattr(favorite, k, World())
+                elif v == "friend":
+                    setattr(favorite, k, Friend())
+                # ToDo: Add Avatar model
+                # elif v == "avatar":
+                #     setattr(favorite, k, Avatar())
+                continue
+            setattr(favorite, k, v)
+        return favorite
